@@ -1,0 +1,88 @@
+#Title 
+Set Up SSH Key Authentication on a Linux Server
+#Purpose
+This SOP is meant for people who need to set up an ssh connection between two Linux environments.
+#Scope
+This applies to Linux system administrators and will cover the steps required to
+1.	Prepare the Linux environment for remote administration
+2.	Install the ssh key service
+3.	Generate keys
+4.	Utilize the generated keys for remote access
+#Definitions
+Ip address= internet protocol address
+Ssh= secure shell
+Username= the username of the Linux machine
+Remote_server_ip=the ip address of the remote server
+/path/tp/private_key= the file path that you saved your private key to
+#Procedure steps
+Step 1: Install and verify the SSH service
+Install the OpenSSH server and run it on your linux machine.
+•	sudo dnf install openssh-server
+Enter root password when prompted.
+•	sudo systemctl enable –now sshd 
+Step 2:set ip ip address 
+Find your network interface using the following command on both machines
+•	ip a
+Step 3: Configure basic firewall access for SSH
+A firewall must be active but allow ssh traffic.
+•	sudo firewall-cmd  --permanent  --add-services=ssh
+•	sudo firewall-cmd --reload
+
+Step 4:key generation
+Generate an ssh key on the linux client.
+•	ssh-keygen -t ed25519
+Click enter to save the key to the default file.
+Press enter two more times to leave the passphrase empty as we do not want a passphrase.
+You will now get your randomart image of the key.
+
+Now copy the public key to your server.
+•	ssh-copy-id username@remote_server_ip
+Type yes when prompted to continue connecting.
+Enter password at the password prompt.
+Now the server has the ssh key.
+
+Step 5: edit configuration
+Enter the ssh daemon file on the Linux server for configuration.
+•	sudo nano /etc/ssh/sshd_config
+Enter root passwort at the prompt.
+Locate the following lines and change them as required.
+•	PermitRootLogin no
+•	PasswordAuthentication no
+•	PubkeyAuthentication yes
+Press control and X to exit and Y to save and enter to select the file to save the configuration under.
+Check for syntax errors so you do not lock yourself out of a machine.
+•	Sudo sshd -t
+Enter password at the password prompt.
+Reload the ssh service to apply changes.
+•	Sudo systemctl reload ssh
+
+Step 6: ssh using private key
+Log into the Linux server from the client using your private key
+•	Ssh -I /path/tp/private_key username@Remote_server_ip
+Exit from the server.
+•	Exit
+Step 7: verify public key
+Log into the server from the client.
+•	Ssh username@Remote_server_ip
+Once you have entered the server exit out.
+•	Exit
+
+
+#Troubleshooting
+The following commands are used to verify and test common connectivity problems.
+•	systemctl status ssh
+Checks if ssh service is active, failing, or stopped.
+•	ping -c 4 remote_server_ip
+Checks if the linux machines can communicate with each other.
+•	ssh-keygen -p -f path/tp/private_key
+Allows you to change your passphrase.
+
+
+#Security Consiterations
+•	sudo ss -tupln
+Shows open ports.
+
+
+Reference or Related Documents 
+https://www.digitalocean.com/community/tutorials/how-to-use-ssh-to-connect-to-a-remote-server
+https://www.redhat.com/en/blog/administering-remote-systems 
